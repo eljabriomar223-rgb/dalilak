@@ -1,1 +1,179 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دليلِك</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#152542;line-height:1.7}
+header{background:#152542;color:white;text-align:center;padding:25px 15px}
+header h1{color:#7dd3fc;margin:0;font-size:34px}
+header p{margin:5px 0}
+nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:15px}
+nav a{color:white;text-decoration:none;background:#263b5c;padding:8px 12px;border-radius:9px}
+main{max-width:700px;width:calc(100% - 24px);margin:20px auto}
+.card{background:white;padding:18px;margin-bottom:18px;border-radius:15px;box-shadow:0 4px 12px #15254212}
+h2{color:#2563eb;margin-top:0}
+input,textarea,button{width:100%;font:inherit;padding:11px;margin:5px 0;border-radius:9px}
+input,textarea{border:1px solid #cbd5e1;background:white}
+textarea{min-height:100px;resize:vertical}
+button{border:0;background:#2563eb;color:white;cursor:pointer;font-weight:bold}
+button.secondary{background:#475569}
+button.danger{background:#dc2626}
+.note{background:#f1f5f9;padding:12px;border-radius:10px;margin-top:10px;overflow-wrap:anywhere}
+.note h3{margin:0;color:#152542}
+.note p{white-space:pre-wrap}
+.note-actions{display:flex;gap:6px}
+.note-actions button{flex:1}
+.result{background:#eff6ff;padding:12px;border-radius:9px;margin-top:10px;overflow-wrap:anywhere}
+.small{font-size:13px;color:#64748b}
+footer{text-align:center;color:#64748b;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<h1>دليلِك 💙</h1>
+<p>كل أدواتك في مكان واحد</p>
+<p>اتعلم، نظّم فلوسك، وأنجز يومك.</p>
+<nav>
+<a href="#notes">📚 المذكرة</a>
+<a href="#money">💰 الفلوس</a>
+<a href="#tools">🧮 الأدوات</a>
+</nav>
+</header>
+<main>
+<section class="card" id="notes">
+<h2>📚 مذكرتي</h2>
+<p>احفظ أفكارك وكلماتك وارجعلها وقت ما تحتاج.</p>
+<input id="noteTitle" placeholder="عنوان الملاحظة">
+<textarea id="noteText" placeholder="اكتب ملاحظتك أو الكلمة ومعناها..."></textarea>
+<button onclick="saveNote()">💾 حفظ الملاحظة</button>
+<input id="searchNotes" placeholder="🔎 ابحث في ملاحظاتك" oninput="renderNotes()">
+<div id="notesList"></div>
+<p class="small">الملاحظات تُحفظ محليًا في المتصفح على هذا الجهاز.</p>
+</section>
+<section class="card" id="money">
+<h2>💰 قسم الفلوس</h2>
+<input id="budget" type="number" min="0" placeholder="الميزانية بالجنيه">
+<input id="expenseName" placeholder="اسم المصروف">
+<input id="expenseAmount" type="number" min="0" placeholder="قيمة المصروف بالجنيه">
+<button onclick="addExpense()">＋ إضافة مصروف</button>
+<div id="moneyResult" class="result">اكتب ميزانيتك وأضف مصروفاتك.</div>
+<div id="expenseList"></div>
+<button class="secondary" onclick="clearExpenses()">مسح سجل المصروفات</button>
+</section>
+<section class="card" id="tools">
+<h2>🧮 حاسبة النسبة المئوية</h2>
+<input id="number" type="number" placeholder="اكتب الرقم">
+<input id="percent" type="number" min="0" max="100" placeholder="النسبة المئوية">
+<button onclick="calculatePercent()">احسب النسبة</button>
+<div id="percentResult" class="result">النتيجة هتظهر هنا.</div>
+<hr>
+<h2>🏷️ حاسبة الخصومات</h2>
+<input id="price" type="number" min="0" placeholder="السعر قبل الخصم">
+<input id="discount" type="number" min="0" max="100" placeholder="نسبة الخصم %">
+<button onclick="calculateDiscount()">احسب السعر بعد الخصم</button>
+<div id="discountResult" class="result">السعر بعد الخصم هيظهر هنا.</div>
+</section>
+</main>
+<footer>دليلِك © 2026 — مشروعك بيكبر خطوة بخطوة 🚀</footer>
+<script>
+let notes=[];
+let expenses=[];
+let editingId=null;
+try{notes=JSON.parse(localStorage.getItem("dalilak_notes")||"[]");if(!Array.isArray(notes))notes=[]}catch(e){notes=[]}
+try{expenses=JSON.parse(localStorage.getItem("dalilak_expenses")||"[]");if(!Array.isArray(expenses))expenses=[]}catch(e){expenses=[]}
+function saveNotesData(){try{localStorage.setItem("dalilak_notes",JSON.stringify(notes))}catch(e){alert("تعذر الحفظ في المتصفح.")}}
+function saveExpenseData(){try{localStorage.setItem("dalilak_expenses",JSON.stringify(expenses))}catch(e){alert("تعذر حفظ المصروفات.")}}
+function saveNote(){
+const title=document.getElementById("noteTitle").value.trim();
+const text=document.getElementById("noteText").value.trim();
+if(!title&&!text){alert("اكتب عنوان أو محتوى الملاحظة الأول.");return}
+if(editingId!==null){const n=notes.find(x=>x.id===editingId);if(n){n.title=title||"ملاحظة بدون عنوان";n.text=text}editingId=null}
+else{notes.unshift({id:Date.now(),title:title||"ملاحظة بدون عنوان",text:text})}
+saveNotesData();
+document.getElementById("noteTitle").value="";
+document.getElementById("noteText").value="";
+document.querySelector("#notes button").textContent="💾 حفظ الملاحظة";
+renderNotes()
+}
+function renderNotes(){
+const list=document.getElementById("notesList");
+list.replaceChildren();
+const q=document.getElementById("searchNotes").value.trim().toLowerCase();
+const filtered=notes.filter(n=>(n.title+" "+n.text).toLowerCase().includes(q));
+if(filtered.length===0){list.textContent=notes.length?"مفيش نتائج للبحث.":"لسه مفيش ملاحظات محفوظة.";return}
+filtered.forEach(n=>{
+const box=document.createElement("div");box.className="note";
+const h=document.createElement("h3");h.textContent=n.title;
+const p=document.createElement("p");p.textContent=n.text;
+const actions=document.createElement("div");actions.className="note-actions";
+const edit=document.createElement("button");edit.textContent="✏️ تعديل";edit.onclick=()=>editNote(n.id);
+const del=document.createElement("button");del.textContent="🗑️ حذف";del.className="danger";del.onclick=()=>deleteNote(n.id);
+actions.append(edit,del);box.append(h,p,actions);list.append(box)
+})
+}
+function editNote(id){
+const n=notes.find(x=>x.id===id);if(!n)return;
+editingId=id;
+document.getElementById("noteTitle").value=n.title;
+document.getElementById("noteText").value=n.text;
+document.querySelector("#notes button").textContent="💾 حفظ التعديل";
+document.getElementById("notes").scrollIntoView({behavior:"smooth"})
+}
+function deleteNote(id){
+if(!confirm("متأكد إنك عايز تحذف الملاحظة؟"))return;
+notes=notes.filter(n=>n.id!==id);if(editingId===id)editingId=null;
+saveNotesData();renderNotes()
+}
+function addExpense(){
+const name=document.getElementById("expenseName").value.trim();
+const amountText=document.getElementById("expenseAmount").value;
+const amount=Number(amountText);
+if(!name||amountText===""||!Number.isFinite(amount)||amount<0){alert("اكتب اسم المصروف ومبلغ صحيح.");return}
+expenses.unshift({id:Date.now(),name,amount});
+saveExpenseData();
+document.getElementById("expenseName").value="";
+document.getElementById("expenseAmount").value="";
+renderExpenses()
+}
+function renderExpenses(){
+const list=document.getElementById("expenseList");list.replaceChildren();
+let total=expenses.reduce((s,e)=>s+e.amount,0);
+const bText=document.getElementById("budget").value;
+const result=document.getElementById("moneyResult");
+if(bText===""){result.textContent="إجمالي المصروفات: "+total+" جنيه. اكتب الميزانية لمعرفة المتبقي."; }
+else if(!Number.isFinite(Number(bText))||Number(bText)<0){result.textContent="اكتب ميزانية صحيحة."}
+else{const remaining=Number(bText)-total;result.textContent="إجمالي المصروفات: "+total+" جنيه — "+(remaining>=0?"المتبقي: "+remaining+" جنيه":"تجاوزت الميزانية بمقدار "+Math.abs(remaining)+" جنيه.")}
+expenses.forEach(e=>{
+const row=document.createElement("div");row.className="note";
+const label=document.createElement("span");label.textContent=e.name+" — "+e.amount+" جنيه";
+const del=document.createElement("button");del.className="danger";del.textContent="حذف المصروف";
+del.onclick=()=>{expenses=expenses.filter(x=>x.id!==e.id);saveExpenseData();renderExpenses()};
+row.append(label,del);list.append(row)
+})
+}
+function clearExpenses(){if(!confirm("تمسح كل المصروفات المسجلة؟"))return;expenses=[];saveExpenseData();renderExpenses()}
+document.getElementById("budget").addEventListener("input",renderExpenses);
+function calculatePercent(){
+const n=document.getElementById("number").value;
+const p=document.getElementById("percent").value;
+const out=document.getElementById("percentResult");
+if(n===""||p===""||!Number.isFinite(Number(n))||!Number.isFinite(Number(p))||Number(p)<0||Number(p)>100){out.textContent="اكتب رقم صحيح ونسبة من 0 إلى 100.";return}
+out.textContent="النتيجة: "+(Number(n)*Number(p)/100)
+}
+function calculateDiscount(){
+const price=document.getElementById("price").value;
+const discount=document.getElementById("discount").value;
+const out=document.getElementById("discountResult");
+if(price===""||discount===""||!Number.isFinite(Number(price))||!Number.isFinite(Number(discount))||Number(price)<0||Number(discount)<0||Number(discount)>100){out.textContent="اكتب سعر صحيح وخصم من 0 إلى 100.";return}
+const saving=Number(price)*Number(discount)/100;
+out.textContent="قيمة الخصم: "+saving+" جنيه — السعر النهائي: "+(Number(price)-saving)+" جنيه."
+}
+renderNotes();
+renderExpenses();
+</script>
+</body>
+  </html>
