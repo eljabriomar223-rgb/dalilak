@@ -341,6 +341,7 @@ const { createClient } = supabase;
 const supabaseClient = createClient(
   'https://wivnrhsuhnurvuchdqez.supabase.co',
   'sb_publishable_Fh9uOJQC8oIRCvLQDCRRVw_KYcF2W1b'
+  window.supabaseClient = supabaseClient;
 );
 console.log('Dalilak connected');
   </script>
@@ -377,5 +378,70 @@ console.log('Dalilak connected');
   document.querySelector('main')?.append(section);
 })();
 </script>
+  <section class="card" id="account">
+  <h2>حسابك في دليلِك 👋</h2>
+  <input id="authName" type="text" placeholder="اسمك" autocomplete="name" style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+  <input id="authEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email" style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+  <input id="authPassword" type="password" placeholder="كلمة السر (8 أحرف على الأقل)" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+  <button onclick="dalilakSignUp()">إنشاء حساب</button>
+  <button onclick="dalilakSignIn()">تسجيل الدخول</button>
+  <button onclick="dalilakSignOut()">تسجيل الخروج</button>
+  <p id="authMessage" role="status" aria-live="polite"></p>
+</section>
+<script>
+function dalilakMessage(message) {
+  document.getElementById('authMessage').textContent = message;
+}
+async function dalilakSignUp() {
+  if (!window.supabaseClient) {
+    dalilakMessage('الاتصال بقاعدة البيانات غير جاهز.');
+    return;
+  }
+  const name = document.getElementById('authName').value.trim();
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if (!name || !email || password.length < 8) {
+    dalilakMessage('اكتب اسمك وإيميلك وكلمة سر من 8 أحرف على الأقل.');
+    return;
+  }
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: { data: { display_name: name } }
+  });
+  if (error) {
+    dalilakMessage('تعذّر إنشاء الحساب: ' + error.message);
+  } else if (data.session) {
+    dalilakMessage('أهلًا بيك يا ' + name + '! حسابك اتعمل.');
+  } else {
+    dalilakMessage('راجع بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.');
+  }
+}
+async function dalilakSignIn() {
+  if (!window.supabaseClient) {
+    dalilakMessage('الاتصال بقاعدة البيانات غير جاهز.');
+    return;
+  }
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if (!email || !password) {
+    dalilakMessage('اكتب الإيميل وكلمة السر.');
+    return;
+  }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email, password
+  });
+  if (error) {
+    dalilakMessage('تعذّر تسجيل الدخول. راجع البيانات وتأكيد الإيميل.');
+  } else {
+    dalilakMessage('أهلًا بيك في دليلِك! تم تسجيل الدخول.');
+  }
+}
+async function dalilakSignOut() {
+  if (!window.supabaseClient) return;
+  const { error } = await supabaseClient.auth.signOut();
+  dalilakMessage(error ? 'تعذّر تسجيل الخروج.' : 'تم تسجيل الخروج.');
+}
+                                           </script>
 </body>
 </html>
