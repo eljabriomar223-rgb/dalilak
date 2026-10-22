@@ -335,5 +335,14 @@ renderFeed();
 renderNotes();
 renderExpenses();
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  'https://wivnrhsuhnurvuchdqez.supabase.co',
+  'sb_publishable_Fh9uOJQC8oIRCvLQDCRRVw_KYcF2W1b'
+);
+console.log('Dalilak connected');
+  </script>
 </body>
 </html>
