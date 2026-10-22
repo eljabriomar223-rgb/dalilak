@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,8 +6,9 @@
 <title>دليلِك</title>
 <style>
 *{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:15px}
 body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#152542;line-height:1.7}
-header{background:#152542;color:white;text-align:center;padding:25px 15px}
+header{background:#152542;color:white;text-align:center;padding:22px 15px}
 header h1{color:#7dd3fc;margin:0;font-size:34px}
 header p{margin:5px 0}
 nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:15px}
@@ -18,32 +18,51 @@ main{max-width:700px;width:calc(100% - 24px);margin:20px auto}
 h2{color:#2563eb;margin-top:0}
 input,textarea,button{width:100%;font:inherit;padding:11px;margin:5px 0;border-radius:9px}
 input,textarea{border:1px solid #cbd5e1;background:white}
-textarea{min-height:100px;resize:vertical}
+textarea{min-height:90px;resize:vertical}
 button{border:0;background:#2563eb;color:white;cursor:pointer;font-weight:bold}
 button.secondary{background:#475569}
 button.danger{background:#dc2626}
-.note{background:#f1f5f9;padding:12px;border-radius:10px;margin-top:10px;overflow-wrap:anywhere}
-.note h3{margin:0;color:#152542}
-.note p{white-space:pre-wrap}
-.note-actions{display:flex;gap:6px}
-.note-actions button{flex:1}
-.result{background:#eff6ff;padding:12px;border-radius:9px;margin-top:10px;overflow-wrap:anywhere}
 .small{font-size:13px;color:#64748b}
+.result{background:#eff6ff;padding:12px;border-radius:9px;margin-top:10px;overflow-wrap:anywhere}
+.note,.post{background:#f8fafc;padding:13px;border-radius:12px;margin-top:10px;overflow-wrap:anywhere}
+.note h3,.post h3{margin:0;color:#152542}
+.note p,.post-content{white-space:pre-wrap;overflow-wrap:anywhere}
+.note-actions,.post-actions{display:flex;gap:7px}
+.note-actions button,.post-actions button{flex:1}
+.post-actions button{font-size:14px}
+.post-meta{font-size:12px;color:#64748b}
+.post-content{margin:10px 0}
+.comment{background:#fff;padding:9px;border-radius:8px;margin-top:7px;font-size:14px}
+.comment-form{display:flex;gap:6px;align-items:center}
+.comment-form input{min-width:0;flex:1}
+.comment-form button{width:auto;white-space:nowrap}
+.empty{text-align:center;padding:18px;color:#64748b}
 footer{text-align:center;color:#64748b;padding:20px}
 </style>
 </head>
 <body>
 <header>
 <h1>دليلِك 💙</h1>
-<p>كل أدواتك في مكان واحد</p>
-<p>اتعلم، نظّم فلوسك، وأنجز يومك.</p>
+<p>مجتمعك وأدواتك في مكان واحد</p>
+<p>شارك أفكارك، نظّم يومك، وأنجز أكتر.</p>
 <nav>
+<a href="#home">🏠 الرئيسية</a>
 <a href="#notes">📚 المذكرة</a>
 <a href="#money">💰 الفلوس</a>
 <a href="#tools">🧮 الأدوات</a>
 </nav>
 </header>
+
 <main>
+<section class="card" id="home">
+<h2>🏠 مجتمع دليلِك</h2>
+<p>عندك فكرة أو نصيحة مفيدة؟ شاركها هنا!</p>
+<textarea id="postText" maxlength="1000" placeholder="بتفكر في إيه؟ اكتب منشورك هنا..."></textarea>
+<button onclick="addPost()">＋ نشر المنشور</button>
+<p class="small">المنشورات في النسخة الحالية محفوظة على متصفحك فقط.</p>
+<div id="feed"></div>
+</section>
+
 <section class="card" id="notes">
 <h2>📚 مذكرتي</h2>
 <p>احفظ أفكارك وكلماتك وارجعلها وقت ما تحتاج.</p>
@@ -54,6 +73,7 @@ footer{text-align:center;color:#64748b;padding:20px}
 <div id="notesList"></div>
 <p class="small">الملاحظات تُحفظ محليًا في المتصفح على هذا الجهاز.</p>
 </section>
+
 <section class="card" id="money">
 <h2>💰 قسم الفلوس</h2>
 <input id="budget" type="number" min="0" placeholder="الميزانية بالجنيه">
@@ -64,6 +84,7 @@ footer{text-align:center;color:#64748b;padding:20px}
 <div id="expenseList"></div>
 <button class="secondary" onclick="clearExpenses()">مسح سجل المصروفات</button>
 </section>
+
 <section class="card" id="tools">
 <h2>🧮 حاسبة النسبة المئوية</h2>
 <input id="number" type="number" placeholder="اكتب الرقم">
@@ -78,33 +99,152 @@ footer{text-align:center;color:#64748b;padding:20px}
 <div id="discountResult" class="result">السعر بعد الخصم هيظهر هنا.</div>
 </section>
 </main>
+
 <footer>دليلِك © 2026 — مشروعك بيكبر خطوة بخطوة 🚀</footer>
+
 <script>
 let notes=[];
 let expenses=[];
+let posts=[];
 let editingId=null;
-try{notes=JSON.parse(localStorage.getItem("dalilak_notes")||"[]");if(!Array.isArray(notes))notes=[]}catch(e){notes=[]}
-try{expenses=JSON.parse(localStorage.getItem("dalilak_expenses")||"[]");if(!Array.isArray(expenses))expenses=[]}catch(e){expenses=[]}
-function saveNotesData(){try{localStorage.setItem("dalilak_notes",JSON.stringify(notes))}catch(e){alert("تعذر الحفظ في المتصفح.")}}
-function saveExpenseData(){try{localStorage.setItem("dalilak_expenses",JSON.stringify(expenses))}catch(e){alert("تعذر حفظ المصروفات.")}}
+
+function loadData(key,fallback){
+try{
+const data=JSON.parse(localStorage.getItem(key)||fallback);
+return Array.isArray(data)?data:[];
+}catch(e){return []}
+}
+notes=loadData("dalilak_notes","[]");
+expenses=loadData("dalilak_expenses","[]");
+posts=loadData("dalilak_posts","[]");
+
+function store(key,data){
+try{localStorage.setItem(key,JSON.stringify(data));return true}
+catch(e){alert("تعذر الحفظ. تأكد من مساحة المتصفح.");return false}
+}
+function saveNotesData(){store("dalilak_notes",notes)}
+function saveExpenseData(){store("dalilak_expenses",expenses)}
+
+function addPost(){
+const input=document.getElementById("postText");
+const text=input.value.trim();
+if(!text){alert("اكتب حاجة الأول قبل النشر.");return}
+posts.unshift({id:Date.now(),text,likes:0,liked:false,comments:[],date:new Date().toLocaleString("ar-EG")});
+if(store("dalilak_posts",posts)){
+input.value="";
+renderFeed();
+}
+}
+function renderFeed(){
+const feed=document.getElementById("feed");
+feed.replaceChildren();
+if(!posts.length){
+const empty=document.createElement("div");
+empty.className="empty";
+empty.textContent="لسه مفيش منشورات. كن أول واحد يشارك فكرة! 💙";
+feed.append(empty);
+return;
+}
+posts.forEach(post=>{
+const box=document.createElement("article");
+box.className="post";
+const title=document.createElement("h3");
+title.textContent="👤 عضو في دليلِك";
+const meta=document.createElement("div");
+meta.className="post-meta";
+meta.textContent=post.date||"منشور";
+const content=document.createElement("div");
+content.className="post-content";
+content.textContent=post.text;
+const actions=document.createElement("div");
+actions.className="post-actions";
+const like=document.createElement("button");
+like.className=post.liked?"secondary":"";
+like.textContent=(post.liked?"💙":"🤍")+" إعجاب ("+(post.likes||0)+")";
+like.onclick=()=>toggleLike(post.id);
+const commentBtn=document.createElement("button");
+commentBtn.className="secondary";
+commentBtn.textContent="💬 التعليقات ("+(post.comments||[]).length+")";
+commentBtn.onclick=()=>{
+const area=box.querySelector(".comment-area");
+area.hidden=!area.hidden;
+};
+const del=document.createElement("button");
+del.className="danger";
+del.textContent="🗑️ حذف";
+del.onclick=()=>deletePost(post.id);
+actions.append(like,commentBtn,del);
+const area=document.createElement("div");
+area.className="comment-area";
+area.hidden=true;
+const commentForm=document.createElement("div");
+commentForm.className="comment-form";
+const commentInput=document.createElement("input");
+commentInput.placeholder="اكتب تعليقك...";
+commentInput.maxLength=300;
+const send=document.createElement("button");
+send.textContent="إرسال";
+send.onclick=()=>addComment(post.id,commentInput.value);
+commentForm.append(commentInput,send);
+area.append(commentForm);
+(post.comments||[]).forEach(c=>{
+const item=document.createElement("div");
+item.className="comment";
+item.textContent="💬 "+c;
+area.append(item);
+});
+box.append(title,meta,content,actions,area);
+feed.append(box);
+});
+}
+function toggleLike(id){
+const post=posts.find(p=>p.id===id);
+if(!post)return;
+post.liked=!post.liked;
+post.likes=Math.max(0,(post.likes||0)+(post.liked?1:-1));
+if(store("dalilak_posts",posts))renderFeed();
+}
+function addComment(id,text){
+text=text.trim();
+if(!text){alert("اكتب التعليق الأول.");return}
+const post=posts.find(p=>p.id===id);
+if(!post)return;
+if(!Array.isArray(post.comments))post.comments=[];
+post.comments.push(text);
+if(store("dalilak_posts",posts))renderFeed();
+}
+function deletePost(id){
+if(!confirm("متأكد إنك عايز تحذف المنشور؟"))return;
+posts=posts.filter(p=>p.id!==id);
+if(store("dalilak_posts",posts))renderFeed();
+}
+
 function saveNote(){
 const title=document.getElementById("noteTitle").value.trim();
 const text=document.getElementById("noteText").value.trim();
 if(!title&&!text){alert("اكتب عنوان أو محتوى الملاحظة الأول.");return}
-if(editingId!==null){const n=notes.find(x=>x.id===editingId);if(n){n.title=title||"ملاحظة بدون عنوان";n.text=text}editingId=null}
-else{notes.unshift({id:Date.now(),title:title||"ملاحظة بدون عنوان",text:text})}
+if(editingId!==null){
+const n=notes.find(x=>x.id===editingId);
+if(n){n.title=title||"ملاحظة بدون عنوان";n.text=text}
+editingId=null;
+}else{
+notes.unshift({id:Date.now(),title:title||"ملاحظة بدون عنوان",text:text});
+}
 saveNotesData();
 document.getElementById("noteTitle").value="";
 document.getElementById("noteText").value="";
 document.querySelector("#notes button").textContent="💾 حفظ الملاحظة";
-renderNotes()
+renderNotes();
 }
 function renderNotes(){
 const list=document.getElementById("notesList");
 list.replaceChildren();
 const q=document.getElementById("searchNotes").value.trim().toLowerCase();
 const filtered=notes.filter(n=>(n.title+" "+n.text).toLowerCase().includes(q));
-if(filtered.length===0){list.textContent=notes.length?"مفيش نتائج للبحث.":"لسه مفيش ملاحظات محفوظة.";return}
+if(!filtered.length){
+list.textContent=notes.length?"مفيش نتائج للبحث.":"لسه مفيش ملاحظات محفوظة.";
+return;
+}
 filtered.forEach(n=>{
 const box=document.createElement("div");box.className="note";
 const h=document.createElement("h3");h.textContent=n.title;
@@ -112,8 +252,8 @@ const p=document.createElement("p");p.textContent=n.text;
 const actions=document.createElement("div");actions.className="note-actions";
 const edit=document.createElement("button");edit.textContent="✏️ تعديل";edit.onclick=()=>editNote(n.id);
 const del=document.createElement("button");del.textContent="🗑️ حذف";del.className="danger";del.onclick=()=>deleteNote(n.id);
-actions.append(edit,del);box.append(h,p,actions);list.append(box)
-})
+actions.append(edit,del);box.append(h,p,actions);list.append(box);
+});
 }
 function editNote(id){
 const n=notes.find(x=>x.id===id);if(!n)return;
@@ -121,59 +261,79 @@ editingId=id;
 document.getElementById("noteTitle").value=n.title;
 document.getElementById("noteText").value=n.text;
 document.querySelector("#notes button").textContent="💾 حفظ التعديل";
-document.getElementById("notes").scrollIntoView({behavior:"smooth"})
+document.getElementById("notes").scrollIntoView({behavior:"smooth"});
 }
 function deleteNote(id){
 if(!confirm("متأكد إنك عايز تحذف الملاحظة؟"))return;
-notes=notes.filter(n=>n.id!==id);if(editingId===id)editingId=null;
-saveNotesData();renderNotes()
+notes=notes.filter(n=>n.id!==id);
+if(editingId===id)editingId=null;
+saveNotesData();renderNotes();
 }
 function addExpense(){
 const name=document.getElementById("expenseName").value.trim();
 const amountText=document.getElementById("expenseAmount").value;
 const amount=Number(amountText);
-if(!name||amountText===""||!Number.isFinite(amount)||amount<0){alert("اكتب اسم المصروف ومبلغ صحيح.");return}
+if(!name||amountText===""||!Number.isFinite(amount)||amount<0){
+alert("اكتب اسم المصروف ومبلغ صحيح.");return;
+}
 expenses.unshift({id:Date.now(),name,amount});
 saveExpenseData();
 document.getElementById("expenseName").value="";
 document.getElementById("expenseAmount").value="";
-renderExpenses()
+renderExpenses();
 }
 function renderExpenses(){
 const list=document.getElementById("expenseList");list.replaceChildren();
-let total=expenses.reduce((s,e)=>s+e.amount,0);
+const total=expenses.reduce((s,e)=>s+e.amount,0);
 const bText=document.getElementById("budget").value;
 const result=document.getElementById("moneyResult");
-if(bText===""){result.textContent="إجمالي المصروفات: "+total+" جنيه. اكتب الميزانية لمعرفة المتبقي."; }
-else if(!Number.isFinite(Number(bText))||Number(bText)<0){result.textContent="اكتب ميزانية صحيحة."}
-else{const remaining=Number(bText)-total;result.textContent="إجمالي المصروفات: "+total+" جنيه — "+(remaining>=0?"المتبقي: "+remaining+" جنيه":"تجاوزت الميزانية بمقدار "+Math.abs(remaining)+" جنيه.")}
+if(bText===""){
+result.textContent="إجمالي المصروفات: "+total+" جنيه. اكتب الميزانية لمعرفة المتبقي.";
+}else if(!Number.isFinite(Number(bText))||Number(bText)<0){
+result.textContent="اكتب ميزانية صحيحة.";
+}else{
+const remaining=Number(bText)-total;
+result.textContent="إجمالي المصروفات: "+total+" جنيه — "+(remaining>=0?"المتبقي: "+remaining+" جنيه":"تجاوزت الميزانية بمقدار "+Math.abs(remaining)+" جنيه.");
+}
 expenses.forEach(e=>{
 const row=document.createElement("div");row.className="note";
 const label=document.createElement("span");label.textContent=e.name+" — "+e.amount+" جنيه";
 const del=document.createElement("button");del.className="danger";del.textContent="حذف المصروف";
-del.onclick=()=>{expenses=expenses.filter(x=>x.id!==e.id);saveExpenseData();renderExpenses()};
-row.append(label,del);list.append(row)
-})
+del.onclick=()=>{
+expenses=expenses.filter(x=>x.id!==e.id);
+saveExpenseData();renderExpenses();
+};
+row.append(label,del);list.append(row);
+});
 }
-function clearExpenses(){if(!confirm("تمسح كل المصروفات المسجلة؟"))return;expenses=[];saveExpenseData();renderExpenses()}
+function clearExpenses(){
+if(!confirm("تمسح كل المصروفات المسجلة؟"))return;
+expenses=[];saveExpenseData();renderExpenses();
+}
 document.getElementById("budget").addEventListener("input",renderExpenses);
+
 function calculatePercent(){
 const n=document.getElementById("number").value;
 const p=document.getElementById("percent").value;
 const out=document.getElementById("percentResult");
-if(n===""||p===""||!Number.isFinite(Number(n))||!Number.isFinite(Number(p))||Number(p)<0||Number(p)>100){out.textContent="اكتب رقم صحيح ونسبة من 0 إلى 100.";return}
-out.textContent="النتيجة: "+(Number(n)*Number(p)/100)
+if(n===""||p===""||!Number.isFinite(Number(n))||!Number.isFinite(Number(p))||Number(p)<0||Number(p)>100){
+out.textContent="اكتب رقم صحيح ونسبة من 0 إلى 100.";return;
+}
+out.textContent="النتيجة: "+(Number(n)*Number(p)/100);
 }
 function calculateDiscount(){
 const price=document.getElementById("price").value;
 const discount=document.getElementById("discount").value;
 const out=document.getElementById("discountResult");
-if(price===""||discount===""||!Number.isFinite(Number(price))||!Number.isFinite(Number(discount))||Number(price)<0||Number(discount)<0||Number(discount)>100){out.textContent="اكتب سعر صحيح وخصم من 0 إلى 100.";return}
-const saving=Number(price)*Number(discount)/100;
-out.textContent="قيمة الخصم: "+saving+" جنيه — السعر النهائي: "+(Number(price)-saving)+" جنيه."
+if(price===""||discount===""||!Number.isFinite(Number(price))||!Number.isFinite(Number(discount))||Number(price)<0||Number(discount)<0||Number(discount)>100){
+out.textContent="اكتب سعر صحيح وخصم من 0 إلى 100.";return;
 }
+const saving=Number(price)*Number(discount)/100;
+out.textContent="قيمة الخصم: "+saving+" جنيه — السعر النهائي: "+(Number(price)-saving)+" جنيه.";
+}
+renderFeed();
 renderNotes();
 renderExpenses();
 </script>
 </body>
-  </html>
+</html>
