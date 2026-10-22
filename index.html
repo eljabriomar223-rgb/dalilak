@@ -344,5 +344,15 @@ const supabaseClient = createClient(
 );
 console.log('Dalilak connected');
   </script>
+  <script>
+supabaseClient.from('posts').select('id').limit(1)
+.then(({ data, error }) => {
+  if (error) {
+    alert('خطأ في الاتصال: ' + error.message);
+  } else {
+    alert('الاتصال شغال! عدد النتائج: ' + data.length);
+  }
+});
+  </script>
 </body>
 </html>
