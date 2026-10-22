@@ -344,15 +344,38 @@ const supabaseClient = createClient(
 );
 console.log('Dalilak connected');
   </script>
-  <script>
-supabaseClient.from('posts').select('id').limit(1)
-.then(({ data, error }) => {
+<script>
+(async function() {
+  const { data, error } = await supabaseClient
+    .from('posts')
+    .select('id, content, created_at')
+    .order('created_at', { ascending: false });
+
+  const section = document.createElement('section');
+  section.style.cssText = 'max-width:700px;margin:20px auto;padding:16px;background:white;border-radius:12px;color:#152542;';
+  const heading = document.createElement('h2');
+  heading.textContent = 'المنشورات';
+  section.append(heading);
+
   if (error) {
-    alert('خطأ في الاتصال: ' + error.message);
+    section.append('تعذر تحميل المنشورات. حاول لاحقًا.');
+  } else if (!data.length) {
+    section.append('لسه مفيش منشورات. تابعنا قريبًا!');
   } else {
-    alert('الاتصال شغال! عدد النتائج: ' + data.length);
+    data.forEach(post => {
+      const card = document.createElement('article');
+      card.style.cssText = 'padding:12px;margin:12px 0;border:1px solid #ddd;border-radius:10px;';
+      const content = document.createElement('p');
+      content.textContent = post.content;
+      const date = document.createElement('small');
+      date.textContent = new Date(post.created_at).toLocaleString('ar-EG');
+      card.append(content, date);
+      section.append(card);
+    });
   }
-});
-  </script>
+
+  document.querySelector('main')?.append(section);
+})();
+</script>
 </body>
 </html>
