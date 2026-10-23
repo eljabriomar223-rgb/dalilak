@@ -50,6 +50,16 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offse
 @media(max-width:480px){header{padding:23px 12px 18px}nav{gap:7px}nav a{font-size:14px;padding:8px 10px}main{width:calc(100% - 20px);margin:16px auto}.card{padding:15px;border-radius:17px}h2{font-size:20px}.note-actions,.post-actions{gap:6px}.note-actions button,.post-actions button{padding:10px 6px;font-size:13px}.comment-form button{padding:10px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @supports(backdrop-filter:blur(12px)){nav a{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}}
+  /* تحسين الثيم الداكن */
+body{background:radial-gradient(ellipse at top right,#142b4b 0%,transparent 42%),#07101f;color:#f5f2ea}
+main .card{background:linear-gradient(145deg,rgba(20,37,65,.96),rgba(9,20,38,.98));border:1px solid rgba(56,189,248,.22);box-shadow:0 10px 30px #0003}
+h2,.note h3,.post h3{color:#7dd3fc}
+input,textarea{background:#0b172a;color:#f5f2ea;border-color:#334b6b}
+input::placeholder,textarea::placeholder{color:#9aacc4}
+.result{background:#132b49;color:#f5f2ea;border:1px solid #284b70}
+.note,.post{background:#101f35;color:#f5f2ea;border:1px solid #253c5a}
+.comment{background:#1a2c46;color:#f5f2ea}
+.small,.post-meta,.empty,footer{color:#a8b6cc}
 </style>
 </head>
 <body>
