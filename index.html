@@ -158,15 +158,34 @@ catch(e){alert("تعذر الحفظ. تأكد من مساحة المتصفح.");
 }
 function saveNotesData(){store("dalilak_notes",notes)}
 function saveExpenseData(){store("dalilak_expenses",expenses)}
-
-function addPost(){
-const input=document.getElementById("postText");
-const text=input.value.trim();
-if(!text){alert("اكتب حاجة الأول قبل النشر.");return}
-posts.unshift({id:Date.now(),text,likes:0,liked:false,comments:[],date:new Date().toLocaleString("ar-EG")});
-if(store("dalilak_posts",posts)){
-input.value="";
-renderFeed();
+async function addPost(){
+  const input=document.getElementById("postText");
+  const text=input.value.trim();
+  if(!text){
+    alert("اكتب حاجة الأول قبل النشر.");
+    return;
+  }
+  const client=window.supabaseClient;
+  if(!client){
+    alert("الاتصال بقاعدة البيانات مش جاهز.");
+    return;
+  }
+  const {data:{user},error:authError}=await client.auth.getUser();
+  if(authError||!user){
+    alert("سجّل الدخول الأول عشان تنشر.");
+    return;
+  }
+  const {error}=await client.from("posts").insert({
+    user_id:user.id,
+    content:text
+  });
+  if(error){
+    alert("تعذّر نشر المنشور: "+error.message);
+    return;
+  }
+  input.value="";
+  alert("تم نشر المنشور بنجاح 💙");
+  location.reload();
 }
 }
 function renderFeed(){
