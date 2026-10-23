@@ -464,7 +464,10 @@ async function dalilakSignUp() {
   const { data, error } = await supabaseClient.auth.signUp({
     email,
     password,
-    options: { data: { display_name: name } }
+    options: {
+  data: { display_name: name },
+  emailRedirectTo: 'https://eljabriomar223-rgb.github.io/dalilak/'
+    }
   });
   if (error) {
     dalilakMessage('تعذّر إنشاء الحساب: ' + error.message);
