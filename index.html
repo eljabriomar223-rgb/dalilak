@@ -385,6 +385,10 @@ console.log('Dalilak connected');
   <button onclick="dalilakSignUp()">إنشاء حساب</button>
   <button onclick="dalilakSignIn()">تسجيل الدخول</button>
     <button onclick="dalilakResetPassword()">نسيت كلمة السر؟</button>
+    <div id="resetPasswordBox" style="display:none">
+  <input id="newPassword" type="password" placeholder="كلمة السر الجديدة (8 أحرف على الأقل)">
+  <button onclick="dalilakSaveNewPassword()">حفظ كلمة السر الجديدة</button>
+    </div>
   <button onclick="dalilakSignOut()">تسجيل الخروج</button>
   <p id="authMessage" role="status" aria-live="polite"></p>
 </section>
@@ -471,6 +475,41 @@ async function dalilakResetPassword() {
 
   dalilakMessage('لو الحساب موجود، راجع بريدك الإلكتروني لرسالة تغيير كلمة السر.');
   }
+  
+async function dalilakSaveNewPassword() {
+  const client = window.supabaseClient;
+  const password = document.getElementById('newPassword').value;
+
+  if (!client) {
+    dalilakMessage('الاتصال بقاعدة البيانات غير جاهز.');
+    return;
+  }
+
+  if (password.length < 8) {
+    dalilakMessage('كلمة السر لازم تكون 8 أحرف على الأقل.');
+    return;
+  }
+
+  const { error } = await client.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    dalilakMessage('تعذّر تغيير كلمة السر: ' + error.message);
+    return;
+  }
+
+  dalilakMessage('تم تغيير كلمة السر بنجاح! سجّل الدخول بكلمة السر الجديدة.');
+  document.getElementById('newPassword').value = '';
+  document.getElementById('resetPasswordBox').style.display = 'none';
+}
+  
+window.supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    document.getElementById('resetPasswordBox').style.display = 'block';
+    dalilakMessage('اكتب كلمة السر الجديدة واحفظها.');
+  }
+});
 async function dalilakSignOut() {
   if (!window.supabaseClient) return;
   const { error } = await supabaseClient.auth.signOut();
