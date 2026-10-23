@@ -416,26 +416,34 @@ async function dalilakSignUp() {
     dalilakMessage('راجع بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.');
   }
 }
+
 async function dalilakSignIn() {
-  if (!window.supabaseClient) {
+  const client = window.supabaseClient;
+  if (!client) {
     dalilakMessage('الاتصال بقاعدة البيانات غير جاهز.');
     return;
   }
+
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
+
   if (!email || !password) {
     dalilakMessage('اكتب الإيميل وكلمة السر.');
     return;
   }
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email, password
+
+  const { data, error } = await client.auth.signInWithPassword({
+    email,
+    password
   });
+
   if (error) {
-    dalilakMessage('تعذّر تسجيل الدخول. راجع البيانات وتأكيد الإيميل.');
-  } else {
-    dalilakMessage('أهلًا بيك في دليلِك! تم تسجيل الدخول.');
+    dalilakMessage('خطأ تسجيل الدخول: ' + error.message);
+    return;
   }
-}
+
+  dalilakMessage('أهلًا بيك في دليلِك! تم تسجيل الدخول.');
+  }
 async function dalilakSignOut() {
   if (!window.supabaseClient) return;
   const { error } = await supabaseClient.auth.signOut();
