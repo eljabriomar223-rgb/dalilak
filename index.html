@@ -384,6 +384,7 @@ console.log('Dalilak connected');
   <input id="authPassword" type="password" placeholder="كلمة السر (8 أحرف على الأقل)" autocomplete="current-password" style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
   <button onclick="dalilakSignUp()">إنشاء حساب</button>
   <button onclick="dalilakSignIn()">تسجيل الدخول</button>
+    <button onclick="dalilakResetPassword()">نسيت كلمة السر؟</button>
   <button onclick="dalilakSignOut()">تسجيل الخروج</button>
   <p id="authMessage" role="status" aria-live="polite"></p>
 </section>
@@ -443,6 +444,32 @@ async function dalilakSignIn() {
   }
 
   dalilakMessage('أهلًا بيك في دليلِك! تم تسجيل الدخول.');
+  }
+  
+async function dalilakResetPassword() {
+  const client = window.supabaseClient;
+  if (!client) {
+    dalilakMessage('الاتصال بقاعدة البيانات غير جاهز.');
+    return;
+  }
+
+  const email = document.getElementById('authEmail').value.trim();
+
+  if (!email) {
+    dalilakMessage('اكتب إيميل حسابك الأول.');
+    return;
+  }
+
+  const { error } = await client.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://eljabriomar223-rgb.github.io/dalilak/'
+  });
+
+  if (error) {
+    dalilakMessage('تعذّر إرسال رسالة الاستعادة: ' + error.message);
+    return;
+  }
+
+  dalilakMessage('لو الحساب موجود، راجع بريدك الإلكتروني لرسالة تغيير كلمة السر.');
   }
 async function dalilakSignOut() {
   if (!window.supabaseClient) return;
