@@ -396,39 +396,78 @@ const supabaseClient = createClient('https://wivnrhsuhnurvuchdqez.supabase.co',
 window.supabaseClient = supabaseClient;
 console.log('Dalilak connected');
   </script>
+
 <script>
-(async function() {
-  const { data, error } = await supabaseClient
-    .from('posts')
-    .select('id, content, created_at')
-    .order('created_at', { ascending: false });
+(async function(){
+  const client = window.supabaseClient;
+  if(!client) return;
 
-  const section = document.createElement('section');
-  section.style.cssText = 'max-width:700px;margin:20px auto;padding:16px;background:white;border-radius:12px;color:#152542;';
-  const heading = document.createElement('h2');
-  heading.textContent = 'المنشورات';
-  section.append(heading);
+  let section = document.getElementById("sharedPostsSection");
 
-  if (error) {
-    section.append('تعذر تحميل المنشورات. حاول لاحقًا.');
-  } else if (!data.length) {
-    section.append('لسه مفيش منشورات. تابعنا قريبًا!');
-  } else {
-    data.forEach(post => {
-      const card = document.createElement('article');
-      card.style.cssText = 'padding:12px;margin:12px 0;border:1px solid #ddd;border-radius:10px;';
-      const content = document.createElement('p');
+  if(!section){
+    section = document.createElement("section");
+    section.id = "sharedPostsSection";
+    section.style.cssText = "max-width:700px;margin:20px auto;padding:16px;background:white;border-radius:12px;color:#152542;";
+    const main = document.querySelector("main");
+    if(!main) return;
+    main.append(section);
+  }
+
+  async function loadSharedPosts(){
+    const {data,error} = await client
+      .from("posts")
+      .select("id,content,created_at")
+      .order("created_at",{ascending:false});
+
+    section.replaceChildren();
+
+    const heading = document.createElement("h2");
+    heading.textContent = "المنشورات";
+    section.append(heading);
+
+    if(error){
+      section.append("تعذر تحميل المنشورات. حاول لاحقًا.");
+      console.error(error);
+      return;
+    }
+
+    if(!data || data.length === 0){
+      section.append("لسه مفيش منشورات. تابعنا قريبًا!");
+      return;
+    }
+
+    data.forEach(post=>{
+      const card = document.createElement("article");
+      card.style.cssText = "padding:12px;margin:12px 0;border:1px solid #ddd;border-radius:10px;";
+
+      const content = document.createElement("p");
       content.textContent = post.content;
-      const date = document.createElement('small');
-      date.textContent = new Date(post.created_at).toLocaleString('ar-EG');
-      card.append(content, date);
+
+      const date = document.createElement("small");
+      date.textContent = new Date(post.created_at).toLocaleString("ar-EG");
+
+      card.append(content,date);
       section.append(card);
     });
   }
 
-  document.querySelector('main')?.append(section);
+  await loadSharedPosts();
+
+  client
+    .channel("dalilak-shared-posts")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "posts"
+      },
+      () => loadSharedPosts()
+    )
+    .subscribe();
 })();
 </script>
+
   <section class="card" id="account">
   <h2>حسابك في دليلِك 👋</h2>
   <input id="authName" type="text" placeholder="اسمك" autocomplete="name" style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
