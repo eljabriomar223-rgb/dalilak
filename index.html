@@ -60,6 +60,12 @@ input::placeholder,textarea::placeholder{color:#9aacc4}
 .note,.post{background:#101f35;color:#f5f2ea;border:1px solid #253c5a}
 .comment{background:#1a2c46;color:#f5f2ea}
 .small,.post-meta,.empty,footer{color:#a8b6cc}
+header nav{display:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:999;display:flex;justify-content:space-around;gap:4px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:rgba(5,14,29,.96);border-top:1px solid rgba(56,189,248,.35);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#b9d7f5;background:transparent;border:1px solid transparent;border-radius:12px;padding:7px 3px;font-size:22px}
+.bottom-nav a small{font-size:11px;color:#dce8f7}
+.bottom-nav a:active,.bottom-nav a:focus{background:#12345b;border-color:#38bdf8;color:#7dd3fc}
+body{padding-bottom:85px}
 </style>
 </head>
 <body>
@@ -121,6 +127,12 @@ input::placeholder,textarea::placeholder{color:#9aacc4}
 <div id="discountResult" class="result">السعر بعد الخصم هيظهر هنا.</div>
 </section>
 </main>
+  <nav class="bottom-nav" aria-label="التنقل الرئيسي">
+<a href="#home"><span>🏠</span><small>الرئيسية</small></a>
+<a href="#notes"><span>📚</span><small>المذكرة</small></a>
+<a href="#money"><span>💰</span><small>الفلوس</small></a>
+<a href="#tools"><span>🧮</span><small>الأدوات</small></a>
+  </nav>
 
 <footer>دليلِك © 2026 — مشروعك بيكبر خطوة بخطوة 🚀</footer>
 
