@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المنشورات - دليلِك</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f1f5f9;color:#152542;margin:0;padding:18px}
+header{background:#152542;color:white;text-align:center;padding:20px;border-radius:16px}
+h1{color:#7dd3fc}
+main{max-width:650px;margin:20px auto}
+textarea{width:100%;min-height:110px;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:16px;resize:vertical}
+button,a{display:inline-block;border:0;border-radius:9px;padding:12px 16px;font-size:16px;text-decoration:none;cursor:pointer}
+button{background:#2563eb;color:white;margin-top:10px}
+a{background:#e2e8f0;color:#152542;margin:4px 0}
+.post{background:white;padding:16px;margin-top:14px;border-radius:12px;overflow-wrap:anywhere;box-shadow:0 3px 10px #0001;white-space:pre-wrap}
+small{color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<h1>📝 المنشورات</h1>
+<p>شارك أفكارك مع دليلِك</p>
+</header>
+<main>
+<a href="index.html">🏠 الرئيسية</a>
+<p>اكتب منشورك هنا:</p>
+<textarea id="content" maxlength="1000" placeholder="اكتب اللي حابب تشاركه..."></textarea>
+<br>
+<button onclick="addPost()">نشر المنشور</button>
+<p id="message"></p>
+<h2>منشوراتي على هذا الجهاز</h2>
+<div id="posts"></div>
+</main>
+<script>
+const key="dalilak_test_posts";
+function loadPosts(){
+let posts=JSON.parse(localStorage.getItem(key)||"[]");
+document.getElementById("posts").innerHTML="";
+posts.forEach((post,i)=>{
+let box=document.createElement("div");
+box.className="post";
+let text=document.createElement("div");
+text.textContent=post.text;
+let date=document.createElement("small");
+date.textContent=post.date;
+let del=document.createElement("button");
+del.textContent="حذف";
+del.onclick=()=>deletePost(i);
+box.append(text,date,document.createElement("br"),del);
+document.getElementById("posts").appendChild(box);
+});
+}
+function addPost(){
+let input=document.getElementById("content");
+let text=input.value.trim();
+let message=document.getElementById("message");
+if(!text){message.textContent="اكتب محتوى المنشور الأول.";return;}
+let posts=JSON.parse(localStorage.getItem(key)||"[]");
+posts.unshift({text,date:new Date().toLocaleString("ar-EG")});
+localStorage.setItem(key,JSON.stringify(posts));
+input.value="";
+message.textContent="تم حفظ المنشور على هذا الجهاز.";
+loadPosts();
+}
+function deletePost(i){
+let posts=JSON.parse(localStorage.getItem(key)||"[]");
+posts.splice(i,1);
+localStorage.setItem(key,JSON.stringify(posts));
+loadPosts();
+}
+loadPosts();
+</script>
+</body>
+</html>
